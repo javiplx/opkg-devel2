@@ -139,6 +139,40 @@ pkg_hash_load_feeds(void)
 	lists_dir = conf->restrict_to_default_dest ?
 		conf->default_dest->lists_dir : conf->lists_dir;
 
+	dist_src_list_elt_t *distiter;
+	dist_src_t *dist;
+
+	for (distiter = void_list_first(&conf->dist_src_list); distiter;
+			distiter = void_list_next(&conf->dist_src_list, distiter)) {
+
+		dist = (dist_src_t *)distiter->data;
+
+		sprintf_alloc(&list_file, "%s/%s-Release", lists_dir, dist->name);
+		if (file_exists(list_file)) {
+
+			char *comp_file;
+
+			char **comp = dist->extra_data;
+			while (*comp != NULL ) {
+				sprintf_alloc(&comp_file, "%s/%s-%s", lists_dir, dist->name, *comp);
+				if (file_exists(comp_file)) {
+					pkg_src_t *src = xcalloc(1, sizeof(pkg_src_t));
+					pkg_src_init(src, comp_file, NULL, NULL, 0);
+					if (pkg_hash_add_from_file(comp_file, src, NULL, 0)) {
+						pkg_src_deinit(src);
+						free(comp_file);
+						free(list_file);
+						return -1;
+					}
+					pkg_src_deinit(src);
+				}
+				free(comp_file);
+				comp++;
+			}
+		}
+		free(list_file);
+	}
+
 	for (iter = void_list_first(&conf->pkg_src_list); iter;
 			iter = void_list_next(&conf->pkg_src_list, iter)) {
 
