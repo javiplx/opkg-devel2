@@ -27,6 +27,7 @@
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
 #include "opkg_message.h"
+#include "release.h"
 #include "pkg.h"
 #include "pkg_dest.h"
 #include "pkg_parse.h"
@@ -110,6 +111,43 @@ opkg_update_cmd(int argc, char **argv)
      if (mkdtemp (tmp) == NULL) {
 	 opkg_perror(ERROR, "Failed to make temp dir %s", conf->tmp_dir);
 	 return -1;
+     }
+
+
+     dist_src_list_elt_t *distiter;
+     dist_src_t *dist;
+
+     for (distiter = void_list_first(&conf->dist_src_list); distiter; distiter = void_list_next(&conf->dist_src_list, distiter)) {
+	  char *url, *list_file_name;
+
+	  dist = (dist_src_t *)distiter->data;
+
+	  char *path = dist_src_release(dist);
+	  sprintf_alloc(&url, "%s/%s", dist->value, path);
+	  free(path);
+
+	  sprintf_alloc(&list_file_name, "%s/%s-Release", lists_dir, dist->name);
+	  err = opkg_download(url, list_file_name, NULL, NULL);
+	  if (!err) {
+
+	       release_t *release = release_new(); 
+
+	       err = release_init_from_file(release, list_file_name);
+	       if (!err) {
+		    err = release_get_packages(release, dist, lists_dir, tmp);
+	       }
+
+	  }
+
+	  if (err) {
+	       failures++;
+	  } else {
+	       opkg_msg(NOTICE, "Downloaded package files for dist %s.\n",
+			    dist->name);
+	  }
+
+	  free(list_file_name);
+	  free(url);
      }
 
 

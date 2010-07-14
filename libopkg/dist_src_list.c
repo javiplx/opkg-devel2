@@ -19,6 +19,7 @@
 
 #include "dist_src_list.h"
 #include "void_list.h"
+#include "sprintf_alloc.h"
 #include "libbb/libbb.h"
 
 int dist_src_init(dist_src_t *dist, const char *name, const char *base_url, const char *extra_data, int plain)
@@ -73,6 +74,30 @@ dist_src_t *dist_src_list_append(dist_src_list_t *list,
     void_list_append((void_list_t *) list, dist_src);
 
     return dist_src;
+}
+
+char *dist_src_release(dist_src_t *dist) {
+    char *path;
+
+    if (dist->plain)
+        sprintf_alloc(&path, "Release");
+    else
+        // NOTE : This will only work if the dist entry is named using the debian suite name
+        sprintf_alloc(&path, "dists/%s/Release", dist->name);
+
+    return path;
+}
+
+char *dist_src_package(dist_src_t *dist, char *compname) {
+    char *path;
+
+    if (dist->plain)
+        sprintf_alloc(&path, "%s/binary-%s/Packages", compname, HOST_CPU_STR);
+    else
+        // NOTE : This will only work if the dist entry is named using the debian suite name
+        sprintf_alloc(&path, "dists/%s/%s/binary-%s/Packages", dist->name, compname, HOST_CPU_STR);
+
+    return path;
 }
 
 char **parse_simple_list(const char *raw) {

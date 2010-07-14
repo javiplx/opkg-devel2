@@ -18,6 +18,7 @@
 #ifndef PKG_VEC_H
 #define PKG_VEC_H
 
+typedef struct release release_t;
 typedef struct pkg pkg_t;
 typedef struct abstract_pkg abstract_pkg_t;
 typedef struct pkg_vec pkg_vec_t;

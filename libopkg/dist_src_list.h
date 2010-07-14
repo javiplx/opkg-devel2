@@ -39,6 +39,9 @@ void dist_src_list_deinit(dist_src_list_t *list);
 
 dist_src_t *dist_src_list_append(dist_src_list_t *list, const char *name, const char *root_dir, const char *extra_data, int plain);
 
+char *dist_src_release(dist_src_t *dist);
+char *dist_src_package(dist_src_t *dist, char *compname);
+
 char **parse_simple_list(const char *raw);
 void simple_list_deinit(char **list);
 
