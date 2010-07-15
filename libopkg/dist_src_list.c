@@ -76,27 +76,21 @@ dist_src_t *dist_src_list_append(dist_src_list_t *list,
     return dist_src;
 }
 
-char *dist_src_release(dist_src_t *dist) {
-    char *path;
+char *dist_src_location(dist_src_t *dist) {
+    char *url;
 
     if (dist->plain)
-        sprintf_alloc(&path, "Release");
+        url = xstrdup(dist->value);
     else
         // NOTE : This will only work if the dist entry is named using the debian suite name
-        sprintf_alloc(&path, "dists/%s/Release", dist->name);
+        sprintf_alloc(&url, "%s/dists/%s", dist->value, dist->name);
 
-    return path;
+    return url;
 }
 
 char *dist_src_package(dist_src_t *dist, char *compname) {
     char *path;
-
-    if (dist->plain)
-        sprintf_alloc(&path, "%s/binary-%s/Packages", compname, HOST_CPU_STR);
-    else
-        // NOTE : This will only work if the dist entry is named using the debian suite name
-        sprintf_alloc(&path, "dists/%s/%s/binary-%s/Packages", dist->name, compname, HOST_CPU_STR);
-
+    sprintf_alloc(&path, "%s/binary-%s/Packages", compname, HOST_CPU_STR);
     return path;
 }
 

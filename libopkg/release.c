@@ -275,8 +275,9 @@ release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char
 	       opkg_msg(ERROR, "Component '%s' not defined on %s.\n", *comp, dist->name);
 	  } else {
 
+	       char *location = dist_src_location(dist);
 	       char *package = dist_src_package(dist, *comp);
-	       sprintf_alloc(&url, "%s/%s.gz", dist->value, package);
+	       sprintf_alloc(&url, "%s/%s.gz", location, package);
 
 	       sprintf_alloc(&list_file_name, "%s/%s-%s", lists_dir, dist->name, *comp);
 
@@ -301,12 +302,13 @@ release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char
 	       }
 
 	       if (err!=0) {
-		    sprintf_alloc(&url, "%s/%s", dist->value, package);
+		    sprintf_alloc(&url, "%s/%s", location, package);
 		    err = opkg_download(url, list_file_name, NULL, NULL);
 		    free(url);
 	       }
 
 	       free(package);
+	       free(location);
 
 	       free(tmp_file_name);
 	       free(list_file_name);

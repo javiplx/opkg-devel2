@@ -122,9 +122,9 @@ opkg_update_cmd(int argc, char **argv)
 
 	  dist = (dist_src_t *)distiter->data;
 
-	  char *path = dist_src_release(dist);
-	  sprintf_alloc(&url, "%s/%s", dist->value, path);
-	  free(path);
+	  char *location = dist_src_location(dist);
+	  sprintf_alloc(&url, "%s/Release", location);
+	  free(location);
 
 	  sprintf_alloc(&list_file_name, "%s/%s-Release", lists_dir, dist->name);
 	  err = opkg_download(url, list_file_name, NULL, NULL);
