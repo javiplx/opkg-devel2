@@ -43,6 +43,10 @@ int release_has_architecture(const char *archname, release_t *release);
 int release_has_component(const char *compname, release_t *release);
 int release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char *tmpdir);
 
+int release_get_size(const char *filename, release_t *release, char *extension);
+char *release_get_md5(const char *filename, release_t *release, char *extension);
+char *release_get_sha256(const char *filename, release_t *release, char *extension);
+
 void release_formatted_info(FILE *fp, release_t *release);
 void release_formatted_field(FILE *fp, release_t *release, const char *field);
 

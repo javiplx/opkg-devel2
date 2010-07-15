@@ -23,6 +23,7 @@
 #include "release.h"
 #include "libopkg/opkg_download.h"
 #include "sprintf_alloc.h"
+#include "file_util.h"
 #include "dist_src_list.h"
 
 #include "opkg_utils.h"
@@ -299,6 +300,24 @@ release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char
 			 fclose (out);
 		    unlink (tmp_file_name);
 		    free(url);
+
+		    if (!err) {
+			 char *stored_md5 = release_get_md5(package,release,"gz");
+
+			 char *md5fname;
+			 sprintf_alloc(&md5fname, "%s/%s-%s", lists_dir, dist->name, stored_md5);
+			 free(stored_md5);
+
+			 char *md5 = file_md5sum_alloc(list_file_name);
+
+			 FILE *md5fd = fopen(md5fname, "w");
+			 fprintf(md5fd, "%s", md5);
+			 fclose(md5fd);
+
+			 free(md5fname);
+			 free(md5);
+		    }
+
 	       }
 
 	       if (err!=0) {
@@ -318,6 +337,104 @@ release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char
 
      return ret;
 }
+
+
+int
+release_get_size(const char *filename, release_t *release, char *extension)
+{
+     int size = -1;
+
+     char *name;
+     if (extension)
+	  sprintf_alloc(&name, "%s.%s", filename, extension);
+     else
+	  name = (char *) filename;
+
+     release_cksum_list_elt_t *iter;
+     release_cksum_t *cksum;
+
+     for (iter = void_list_first(release->md5sums); iter; iter = void_list_next(release->md5sums, iter)) {
+	  cksum = (release_cksum_t *)iter->data;
+	  if (strcmp(name,cksum->filename)==0) {
+	       size = cksum->filesize;
+	       break;
+	  }
+     }
+
+#if defined HAVE_SHA256
+     if (size == -1)
+	  for (iter = void_list_first(release->sha256sums); iter; iter = void_list_next(release->sha256sums, iter)) {
+	       cksum = (release_cksum_t *)iter->data;
+	       if (strcmp(name,cksum->filename)==0) {
+		    size = cksum->filesize;
+		    break;
+	       }
+	  }
+#endif
+
+     if (extension)
+	  free(name);
+
+     return size;
+}
+
+char *
+release_get_md5(const char *filename, release_t *release, char *extension)
+{
+     char *value = NULL;
+
+     char *name;
+     if (extension)
+	  sprintf_alloc(&name, "%s.%s", filename, extension);
+     else
+	  name = (char *) filename;
+
+     release_cksum_list_elt_t *iter;
+     release_cksum_t *cksum;
+
+     for (iter = void_list_first(release->md5sums); iter; iter = void_list_next(release->md5sums, iter)) {
+	  cksum = (release_cksum_t *)iter->data;
+	  if (strcmp(name,cksum->filename)==0) {
+	       value = xstrdup(cksum->value);
+	       break;
+	  }
+     }
+
+     if (extension)
+	  free(name);
+
+     return value;
+}
+
+#if defined HAVE_SHA256
+char *
+release_get_sha256(const char *filename, release_t *release, char *extension)
+{
+     char *value = NULL;
+
+     char *name;
+     if (extension)
+	  sprintf_alloc(&name, "%s.%s", filename, extension);
+     else
+	  name = (char *) filename;
+
+     release_cksum_list_elt_t *iter;
+     release_cksum_t *cksum;
+
+     for (iter = void_list_first(release->sha256sums); iter; iter = void_list_next(release->sha256sums, iter)) {
+	  cksum = (release_cksum_t *)iter->data;
+	  if (strcmp(name,cksum->filename)==0) {
+	       xstrdup(value = cksum->value);
+	       break;
+	  }
+     }
+
+     if (extension)
+	  free(name);
+
+     return value;
+}
+#endif
 
 void
 release_formatted_field(FILE *fp, release_t *release, const char *field)

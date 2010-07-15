@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "hash_table.h"
+#include "release.h"
 #include "pkg.h"
 #include "opkg_message.h"
 #include "pkg_vec.h"
@@ -150,12 +151,42 @@ pkg_hash_load_feeds(void)
 		sprintf_alloc(&list_file, "%s/%s-Release", lists_dir, dist->name);
 		if (file_exists(list_file)) {
 
+			release_t *release = release_new(); 
+			int err = release_init_from_file(release, list_file);
+			if (!err) {
+
 			char *comp_file;
 
 			char **comp = dist->extra_data;
 			while (*comp != NULL ) {
 				sprintf_alloc(&comp_file, "%s/%s-%s", lists_dir, dist->name, *comp);
 				if (file_exists(comp_file)) {
+
+					char *package = dist_src_package(dist, *comp);
+
+					char *stored_md5 = xstrdup(release_get_md5(package, release, NULL));
+					if (!stored_md5) {
+						stored_md5 = release_get_md5(package, release, "gz");
+
+						char *md5fname;
+						sprintf_alloc(&md5fname, "%s/%s-%s", lists_dir, dist->name, stored_md5); //release_get_md5(package, release, "gz"));
+
+						FILE *md5fd = fopen(md5fname, "r");
+						if (md5fd) {
+						     memset(stored_md5, '\0', 33);
+						     fread((void*)stored_md5, sizeof(char *), 32, md5fd);
+						     fclose(md5fd);
+						}
+					}
+
+					char *md5 = file_md5sum_alloc(comp_file);
+					err = strncmp(stored_md5, md5, 32);
+
+					free(stored_md5);
+					free(md5);
+
+					if (!err) {
+
 					pkg_src_t *src = xcalloc(1, sizeof(pkg_src_t));
 					pkg_src_init(src, comp_file, NULL, NULL, 0);
 					if (pkg_hash_add_from_file(comp_file, src, NULL, 0)) {
@@ -165,9 +196,16 @@ pkg_hash_load_feeds(void)
 						return -1;
 					}
 					pkg_src_deinit(src);
+
+					} else {
+					     opkg_msg(ERROR, "Checksum mismatch on component %s from %s\n", *comp, dist->name);
+					     return -1;
+					}
 				}
 				free(comp_file);
 				comp++;
+			}
+
 			}
 		}
 		free(list_file);
