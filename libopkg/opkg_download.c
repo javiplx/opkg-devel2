@@ -135,6 +135,14 @@ opkg_download(const char *src, const char *dest_file_name,
 	curl_easy_setopt (curl, CURLOPT_URL, src);
 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
 
+	const char *authenticator = getenv(OPKG_AUTHENTICATOR);
+	if (authenticator) {
+	    char *cookie;
+	    sprintf_alloc(&cookie, OPKG_COOKIENAME "=%s", authenticator);
+	    curl_easy_setopt (curl, CURLOPT_COOKIE, cookie);
+            free(cookie);
+	}
+
 	res = curl_easy_perform (curl);
 	fclose (file);
 	if (res)
