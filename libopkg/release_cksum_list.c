@@ -24,13 +24,7 @@
 
 
 int release_cksum_init(release_cksum_t *cksum, char **itemlist)
-//int release_cksum_init(release_cksum_t *cksum, const char *name, int size, const char *value)
 {
-/*
-    cksum->filename = xstrdup(name);
-    cksum->filesize = size;
-    cksum->value = xstrdup(value);
-*/
     cksum->value = xstrdup(*itemlist++);
     cksum->filesize = atoi(*itemlist++);
     cksum->filename = xstrdup(*itemlist++);

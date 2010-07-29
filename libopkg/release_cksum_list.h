@@ -35,7 +35,6 @@ typedef struct void_list release_cksum_list_t;
 void release_cksum_list_init(release_cksum_list_t *list);
 void release_cksum_list_deinit(release_cksum_list_t *list);
 
-//release_cksum_t *release_cksum_list_append(release_cksum_list_t *list, const char *name, int size, const char *value);
 release_cksum_t *release_cksum_list_append(release_cksum_list_t *list, char **itemlist);
 
 #endif
