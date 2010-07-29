@@ -331,6 +331,8 @@ release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char
 	       if (err!=0) {
 		    sprintf_alloc(&url, "%s/%s", location, package);
 		    err = opkg_download(url, list_file_name, NULL, NULL);
+		    if (err!=0)
+			 ret = -1;
 		    free(url);
 	       }
 
