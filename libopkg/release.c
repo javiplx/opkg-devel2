@@ -192,7 +192,12 @@ release_parse_from_stream(release_t *release, FILE *fp)
                         opkg_msg(ERROR, "Failed to parse release line for %s:\n\t%s\n",
 					release->name, buf);
 		nread = getline(&buf, &buflen, fp);
-	       }
+	}
+
+	if (!feof(fp)) {
+		opkg_perror(ERROR, "Problems reading Release file for %sd\n", release->name);
+		ret = -1;
+	}
 
 	return ret;
 }
