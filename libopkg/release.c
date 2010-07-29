@@ -230,6 +230,9 @@ release_init_from_file(release_t *release, const char *filename)
 		err = -1;
 	}
 
+	if ( err != 0 )
+		unlink (filename);
+
 	return err;
 }
 
