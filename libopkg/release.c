@@ -298,7 +298,8 @@ release_get_packages(release_t *release, dist_src_t *dist, char *lists_dir, char
 		    in = fopen (tmp_file_name, "r");
 		    out = fopen (list_file_name, "w");
 		    if (in && out) {
-			 if (unzip (in, out))
+			 err = unzip (in, out);
+			 if (err)
 			      opkg_msg(INFO, "Corrumpt file at %s.\n", url);
 		    } else
 			 err = 1;
