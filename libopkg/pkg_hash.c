@@ -159,15 +159,20 @@ pkg_hash_load_feeds(void)
 
 			char **comp = dist->extra_data;
 			while (*comp != NULL ) {
+
+				if (!release_has_component(*comp, release)) {
+					opkg_msg(ERROR, "Component '%s' not defined on %s.\n", *comp, dist->name);
+				} else {
+
 				sprintf_alloc(&comp_file, "%s/%s-%s", lists_dir, dist->name, *comp);
+
 				if (file_exists(comp_file)) {
 
+					char *md5 = file_md5sum_alloc(comp_file);
 					char *package = dist_src_package(dist, *comp);
 
-					char *stored_md5 = release_get_md5(package, release, NULL);
-					if (!stored_md5) {
-						stored_md5 = release_get_md5(package, release, "gz");
-
+					char *stored_md5 = release_get_md5(package, release, ".gz");
+					if (stored_md5!=NULL) {
 						char *md5fname;
 						sprintf_alloc(&md5fname, "%s/%s-%s", lists_dir, dist->name, stored_md5);
 
@@ -177,9 +182,10 @@ pkg_hash_load_feeds(void)
 						     fread((void*)stored_md5, sizeof(char *), 32, md5fd);
 						     fclose(md5fd);
 						}
+					} else {
+						stored_md5 = release_get_md5(package, release, NULL);
 					}
 
-					char *md5 = file_md5sum_alloc(comp_file);
 					err = strncmp(stored_md5, md5, 32);
 
 					free(stored_md5);
@@ -203,6 +209,9 @@ pkg_hash_load_feeds(void)
 					}
 				}
 				free(comp_file);
+
+				}
+
 				comp++;
 			}
 
