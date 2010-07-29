@@ -271,7 +271,7 @@ opkg_conf_parse_file(const char *filename,
 				regmatch[11].rm_eo - regmatch[11].rm_so);
 	  }
 
-	  if (regmatch[13].rm_so!=regmatch[13].rm_eo && strcmp(type, "dist")!=0 && strcmp(type, "dist/plain")!=0) {
+	  if (regmatch[13].rm_so!=regmatch[13].rm_eo && strncmp(type, "dist", 4)!=0) {
 	       opkg_msg(ERROR, "%s:%d: Ignoring config line with trailing garbage: `%s'\n",
 		       filename, line_num, line);
 	  } else {
@@ -284,30 +284,29 @@ opkg_conf_parse_file(const char *filename,
 	     tmp_src_nv_pair_list for sake of symmetry.) */
 	  if (strcmp(type, "option") == 0) {
 	       opkg_conf_set_option(name, value);
- 	  } else if (strcmp(type, "dist") == 0) {
+ 	  } else if (strncmp(type, "dist", 4) == 0) {
  	       if ( extra == NULL ) {
  		    opkg_msg(ERROR, "%s:%d: Ignoring invalid dist '%s'\n",
  			    filename, line_num, name);
  	       } else {
+ 		    char *subtype = type+4;
  		    if (!nv_pair_list_find((nv_pair_list_t*) dist_src_list, name)) {
  			 dist_src_list_append (dist_src_list, name, value, extra, 0);
+			 int plain = 0;
+			 if (strcmp(subtype, "/plain") == 0) {
+			      plain = 1;
+			      subtype += 6;
+ 	  		 }
+ 	  		 if ( *subtype == '\0' )
+			      dist_src_list_append (dist_src_list, name, value, extra, 1);
+ 	  		 else
+			      opkg_msg(ERROR, "%s:%d: Ignoring invalid subtype in dist line: `%s'\n",
+					      filename, line_num, subtype);
  		    } else {
  			 opkg_msg(ERROR, "Duplicate dist declaration (%s %s). "
  					 "Skipping.\n", name, value);
  		    }
  	       }
-	  } else if (strcmp(type, "dist/plain") == 0) {
-	       if ( extra == NULL ) {
-		    opkg_msg(ERROR, "%s:%d: Ignoring invalid plain dist '%s'\n",
-			    filename, line_num, name);
-	       } else {
-		    if (!nv_pair_list_find((nv_pair_list_t*) dist_src_list, name)) {
-			 dist_src_list_append (dist_src_list, name, value, extra, 1);
-		    } else {
-			 opkg_msg(ERROR, "Duplicate plain dist declaration (%s %s). "
-					 "Skipping.\n", name, value);
-		    }
-	       }
 	  } else if (strcmp(type, "src") == 0) {
 	       if (!nv_pair_list_find((nv_pair_list_t*) pkg_src_list, name)) {
 		    pkg_src_list_append (pkg_src_list, name, value, extra, 0);
