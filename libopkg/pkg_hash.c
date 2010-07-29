@@ -164,12 +164,12 @@ pkg_hash_load_feeds(void)
 
 					char *package = dist_src_package(dist, *comp);
 
-					char *stored_md5 = xstrdup(release_get_md5(package, release, NULL));
+					char *stored_md5 = release_get_md5(package, release, NULL);
 					if (!stored_md5) {
 						stored_md5 = release_get_md5(package, release, "gz");
 
 						char *md5fname;
-						sprintf_alloc(&md5fname, "%s/%s-%s", lists_dir, dist->name, stored_md5); //release_get_md5(package, release, "gz"));
+						sprintf_alloc(&md5fname, "%s/%s-%s", lists_dir, dist->name, stored_md5);
 
 						FILE *md5fd = fopen(md5fname, "r");
 						if (md5fd) {
