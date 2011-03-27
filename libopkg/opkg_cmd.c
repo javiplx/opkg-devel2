@@ -113,6 +113,25 @@ opkg_update_cmd(int argc, char **argv)
      }
 
 
+     for (iter = void_list_first(&conf->dist_src_list); iter; iter = void_list_next(&conf->dist_src_list, iter)) {
+	  char *url, *list_file_name;
+
+	  src = (pkg_src_t *)iter->data;
+
+	  sprintf_alloc(&url, "%s/dists/%s/Release", src->value, src->name);
+
+	  sprintf_alloc(&list_file_name, "%s/%s-Release", lists_dir, src->name);
+	  err = opkg_download(url, list_file_name, NULL, NULL);
+	  if (err) {
+	       failures++;
+	  } else
+	       opkg_msg(NOTICE, "Downloaded release file for dist %s.\n",
+			    src->name);
+
+	  free(list_file_name);
+	  free(url);
+     }
+
      for (iter = void_list_first(&conf->pkg_src_list); iter; iter = void_list_next(&conf->pkg_src_list, iter)) {
 	  char *url, *list_file_name;
 
