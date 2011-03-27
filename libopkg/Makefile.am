@@ -15,6 +15,7 @@ opkg_cmd_sources = opkg_cmd.c opkg_cmd.h \
 		   opkg_upgrade.c opkg_upgrade.h \
 		   opkg_remove.c opkg_remove.h
 opkg_db_sources = opkg_conf.c opkg_conf.h \
+		  release.c release.h \
 		  opkg_utils.c opkg_utils.h pkg.c pkg.h hash_table.h \
 		  pkg_depends.c pkg_depends.h pkg_extract.c pkg_extract.h \
 		  hash_table.c pkg_hash.c pkg_hash.h pkg_parse.c pkg_parse.h \

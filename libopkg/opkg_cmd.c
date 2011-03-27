@@ -27,6 +27,7 @@
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
 #include "opkg_message.h"
+#include "release.h"
 #include "pkg.h"
 #include "pkg_dest.h"
 #include "pkg_parse.h"
@@ -122,11 +123,16 @@ opkg_update_cmd(int argc, char **argv)
 
 	  sprintf_alloc(&list_file_name, "%s/%s-Release", lists_dir, src->name);
 	  err = opkg_download(url, list_file_name, NULL, NULL);
-	  if (err) {
-	       failures++;
-	  } else
-	       opkg_msg(NOTICE, "Downloaded release file for dist %s.\n",
+	  if (!err) {
+	       opkg_msg(NOTICE, "Downloaded release files for dist %s.\n",
 			    src->name);
+	       release_t *release = release_new(); 
+	       err = release_init_from_file(release, list_file_name);
+	       release_deinit(release); 
+	  }
+
+	  if (err)
+	       failures++;
 
 	  free(list_file_name);
 	  free(url);
