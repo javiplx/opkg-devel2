@@ -128,9 +128,12 @@ opkg_update_cmd(int argc, char **argv)
 			    src->name);
 	       release_t *release = release_new(); 
 	       err = release_init_from_file(release, list_file_name);
-	       if (!err && src->extra_data) {
+	       if (!err) {
 		    if (!release_comps_supported(release, src->extra_data))
 			 err = -1;
+	       }
+	       if (!err) {
+		    err = release_download(release, src, lists_dir, tmp);
 	       }
 	       release_deinit(release); 
 	       if (err)

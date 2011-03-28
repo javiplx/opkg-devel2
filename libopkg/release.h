@@ -18,6 +18,9 @@
 #ifndef RELEASE_H
 #define RELEASE_H
 
+#include <stdio.h>
+#include "pkg.h"
+
 struct release
 {
      char *name;
@@ -26,6 +29,8 @@ struct release
      unsigned int architectures_count;
      char **components;
      unsigned int components_count;
+     char **complist;
+     unsigned int complist_count;
 };
 
 typedef struct release release_t;
@@ -36,5 +41,6 @@ int release_init_from_file(release_t *release, const char *filename);
 
 int release_arch_supported(release_t *release);
 int release_comps_supported(release_t *release, const char *complist);
+int release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmpdir);
 
 #endif
