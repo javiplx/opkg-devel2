@@ -121,14 +121,20 @@ opkg_update_cmd(int argc, char **argv)
 
 	  sprintf_alloc(&url, "%s/dists/%s/Release", src->value, src->name);
 
-	  sprintf_alloc(&list_file_name, "%s/%s-Release", lists_dir, src->name);
+	  sprintf_alloc(&list_file_name, "%s/%s", lists_dir, src->name);
 	  err = opkg_download(url, list_file_name, NULL, NULL);
 	  if (!err) {
 	       opkg_msg(NOTICE, "Downloaded release files for dist %s.\n",
 			    src->name);
 	       release_t *release = release_new(); 
 	       err = release_init_from_file(release, list_file_name);
+	       if (!err && src->extra_data) {
+		    if (!release_comps_supported(release, src->extra_data))
+			 err = -1;
+	       }
 	       release_deinit(release); 
+	       if (err)
+		    unlink(list_file_name);
 	  }
 
 	  if (err)

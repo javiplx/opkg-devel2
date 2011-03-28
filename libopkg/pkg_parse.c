@@ -136,7 +136,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 			goto dont_reset_flags;
 	    	}
 		else if ((mask & PFM_CONFLICTS) && is_field("Conflicts", line))
-			pkg->conflicts_str = parse_list(line, &pkg->conflicts_count, ',');
+			pkg->conflicts_str = parse_list(line, &pkg->conflicts_count, ',', 0);
 		break;
 
 	case 'D':
@@ -146,7 +146,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 			reading_description = 1;
 			goto dont_reset_flags;
 		} else if ((mask & PFM_DEPENDS) && is_field("Depends", line))
-			pkg->depends_str = parse_list(line, &pkg->depends_count, ',');
+			pkg->depends_str = parse_list(line, &pkg->depends_count, ',', 0);
 		break;
 
 	case 'E':
@@ -193,16 +193,16 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		else if ((mask & PFM_PRIORITY) && is_field("Priority", line))
 			pkg->priority = parse_simple("Priority", line);
 		else if ((mask & PFM_PROVIDES) && is_field("Provides", line))
-			pkg->provides_str = parse_list(line, &pkg->provides_count, ',');
+			pkg->provides_str = parse_list(line, &pkg->provides_count, ',', 0);
 		else if ((mask & PFM_PRE_DEPENDS) && is_field("Pre-Depends", line))
-			pkg->pre_depends_str = parse_list(line, &pkg->pre_depends_count, ',');
+			pkg->pre_depends_str = parse_list(line, &pkg->pre_depends_count, ',', 0);
 		break;
 
 	case 'R':
 		if ((mask & PFM_RECOMMENDS) && is_field("Recommends", line))
-			pkg->recommends_str = parse_list(line, &pkg->recommends_count, ',');
+			pkg->recommends_str = parse_list(line, &pkg->recommends_count, ',', 0);
 		else if ((mask & PFM_REPLACES) && is_field("Replaces", line))
-			pkg->replaces_str = parse_list(line, &pkg->replaces_count, ',');
+			pkg->replaces_str = parse_list(line, &pkg->replaces_count, ',', 0);
 
 		break;
 
@@ -222,7 +222,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		else if ((mask & PFM_STATUS) && is_field("Status", line))
 			parse_status(pkg, line);
 		else if ((mask & PFM_SUGGESTS) && is_field("Suggests", line))
-			pkg->suggests_str = parse_list(line, &pkg->suggests_count, ',');
+			pkg->suggests_str = parse_list(line, &pkg->suggests_count, ',', 0);
 		break;
 
 	case 'T':

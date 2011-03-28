@@ -41,16 +41,18 @@ parse_simple(const char *type, const char *line)
  * Parse a comma separated string into an array.
  */
 char **
-parse_list(const char *raw, unsigned int *count, const char sep)
+parse_list(const char *raw, unsigned int *count, const char sep, int skip_field)
 {
 	char **depends = NULL;
 	const char *start, *end;
 	int line_count = 0;
 
 	/* skip past the "Field:" marker */
+	if (!skip_field) {
 	while (*raw && *raw != ':')
 		raw++;
 	raw++;
+	}
 
 	if (line_is_blank(raw)) {
 		*count = line_count;

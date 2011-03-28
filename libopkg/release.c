@@ -15,7 +15,6 @@
    General Public License for more details.
 */
 
-#include <unistd.h>
 #include <ctype.h>
 
 #include "release.h"
@@ -26,6 +25,8 @@
 #include "sprintf_alloc.h"
 
 #include "release_parse.h"
+
+#include "parse_util.h"
 
 static void
 release_init(release_t *release)
@@ -83,9 +84,63 @@ release_init_from_file(release_t *release, const char *filename)
 		return -1;
 	}
 
-	if((err=release_parse_from_stream(release, release_file)))
-		unlink (filename);
+	err=release_parse_from_stream(release, release_file);
+	if (!err) {
+		if (!release_arch_supported(release)) {
+			opkg_msg(ERROR, "No valid architecture found on Release file.\n",
+				HOST_CPU_STR);
+			err = -1;
+		}
+	}
 
 	return err;
 }
 
+int
+release_arch_supported(release_t *release)
+{
+     nv_pair_list_elt_t *l;
+     int i;
+
+     list_for_each_entry(l , &conf->arch_list.head, node) {
+	  nv_pair_t *nv = (nv_pair_t *)l->data;
+	  for(i = 0; i < release->architectures_count; i++){
+	       if (strcmp(nv->name, release->architectures[i]) == 0) {
+		    opkg_msg(DEBUG, "Arch %s (priority %s) supported for dist %s.\n",
+				    nv->name, nv->value, release->name);
+		    return 1;
+	       }
+	  }
+     }
+
+     return 0;
+}
+
+int
+release_comps_supported(release_t *release, const char *complist)
+{
+     int ret = 0;
+     unsigned int ncomp;
+     char **comps;
+     int i, j;
+
+     comps = parse_list(complist, &ncomp, ' ', 1);
+
+     for(j = 0; j < ncomp; j++){
+	  for(i = 0; i < release->components_count; i++){
+	       if (strcmp(comps[j], release->components[i]) == 0) {
+		    opkg_msg(DEBUG, "Component %s supported for dist %s.\n",
+				    comps[j], release->name);
+		    ret = 1;
+		    break;
+	       }
+	  }
+     }
+
+     for(j = 0; j < ncomp; j++){
+	  free(comps[j]);
+     }
+     free(comps);
+
+     return ret;
+}

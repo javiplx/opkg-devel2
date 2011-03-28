@@ -32,7 +32,7 @@ release_parse_line(release_t *release, const char *line)
 	switch (*line) {
 	case 'A':
 		if (is_field("Architectures", line)) {
-			release->architectures = parse_list(line, &release->architectures_count, ' ');
+			release->architectures = parse_list(line, &release->architectures_count, ' ', 0);
 		}
 		break;
 
@@ -41,7 +41,7 @@ release_parse_line(release_t *release, const char *line)
 			release->name = parse_simple("Codename", line);
 	    	}
 		else if (is_field("Components", line)) {
-			release->components = parse_list(line, &release->components_count, ' ');
+			release->components = parse_list(line, &release->components_count, ' ', 0);
 	    	}
 		break;
 

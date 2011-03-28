@@ -34,4 +34,7 @@ release_t *release_new(void);
 void release_deinit(release_t *release);
 int release_init_from_file(release_t *release, const char *filename);
 
+int release_arch_supported(release_t *release);
+int release_comps_supported(release_t *release, const char *complist);
+
 #endif

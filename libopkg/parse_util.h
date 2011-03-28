@@ -20,6 +20,6 @@
 
 int is_field(const char *type, const char *line);
 char *parse_simple(const char *type, const char *line);
-char **parse_list(const char *raw, unsigned int *count, const char sep);
+char **parse_list(const char *raw, unsigned int *count, const char sep, int skip_field);
 
 #endif
