@@ -184,7 +184,7 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	       sprintf_alloc(&url, "%s-%s/%s", prefix, nv->name, dist->gzip ? "Packages.gz" : "Packages");
 
-	       sprintf_alloc(&list_file_name, "%s/%s-%s", lists_dir, dist->name, comps[i]);
+	       sprintf_alloc(&list_file_name, "%s/%s-%s-%s", lists_dir, dist->name, nv->name, comps[i]);
 
 	       sprintf_alloc(&tmp_file_name, "%s/%s-%s-%s%s", tmpdir, dist->name, comps[i], nv->name, ".gz");
 
