@@ -15,23 +15,9 @@
    General Public License for more details.
 */
 
-#ifndef RELEASE_H
-#define RELEASE_H
+#ifndef RELEASE_PARSE_H
+#define RELEASE_PARSE_H
 
-struct release
-{
-     char *name;
-     char *datestring;
-     char **architectures;
-     unsigned int architectures_count;
-     char **components;
-     unsigned int components_count;
-};
-
-typedef struct release release_t;
-
-release_t *release_new(void);
-void release_deinit(release_t *release);
-int release_init_from_file(release_t *release, const char *filename);
+int release_parse_from_stream(release_t *release, FILE *fp);
 
 #endif

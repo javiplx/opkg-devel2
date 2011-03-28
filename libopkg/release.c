@@ -25,125 +25,7 @@
 #include "opkg_download.h"
 #include "sprintf_alloc.h"
 
-
-void simple_list_deinit(char **list) {
-    char **l = list;
-    if (list != NULL )
-        while (*list != NULL )
-            free(*list++);
-    free(l);
-}
-
-char **parse_simple_list(const char *raw) {
-    int n = 0;
-
-    char **list = (char **) xcalloc(n+1, sizeof(char *));
-    if (list == NULL) {
-        return NULL;
-    }
-    *list = NULL;
-
-    char *c0 = (char *) raw;
-    while ( *raw != '\0' ) {
-        if (isspace(*raw)) {
-            *(list+n) = xstrndup(c0, raw-c0);
-            list = (char **) xrealloc(list, (++n+1) * sizeof (char *));
-            *(list+n) = NULL;
-            while(isspace(*raw))
-                raw++;
-            c0 = (char *) raw;
-            raw--;
-        }
-        raw++;
-    }
-    *(list+n) = xstrndup( c0 , raw-c0 );
-    list = (char **) xrealloc (list , (++n+1) * sizeof (char *));
-    *(list+n) = NULL;
-
-    return list;
-}
-
-static int
-is_release_field(const char *type, const char *line)
-{
-        if (!strncmp(line, type, strlen(type)))
-                return 1;
-        return 0;
-}
-
-static char *
-release_parse_simple(const char *type, const char *line)
-{
-	return trim_xstrdup(line + strlen(type) + 2);
-}
-
-static char **
-release_parse_list(const char *type, const char *line)
-{
-	return parse_simple_list(line + strlen(type) + 2);
-}
-
-static int
-release_parse_line(release_t *release, const char *line)
-{
-	int ret = 0;
-
-	switch (*line) {
-	case 'A':
-		if (is_release_field("Architectures", line)) {
-			release->architectures = release_parse_list("Architectures", line);
-		}
-		break;
-
-	case 'C':
-		if (is_release_field("Codename", line)) {
-			release->name = release_parse_simple("Codename", line);
-	    	}
-		else if (is_release_field("Components", line)) {
-			release->components = release_parse_list("Components", line);
-	    	}
-		break;
-
-	case 'D':
-		if (is_release_field("Date", line)) {
-			release->datestring = release_parse_simple("Date", line);
-		}
-		break;
-
-	case ' ':
-		break;
-
-	default:
-		ret = 1;
-	}
-
-	return ret;
-}
-
-int
-release_parse_from_stream(release_t *release, FILE *fp)
-{
-	int ret = 0;
-	char *buf = NULL;
-	size_t buflen, nread;
-
-	nread = getline(&buf, &buflen, fp);
-	while ( nread != -1 ) {
-		if (buf[nread-1] == '\n') buf[nread-1] = '\0';
-		if (release_parse_line(release, buf))
-                        opkg_msg(DEBUG, "Failed to parse release line for %s:\n\t%s\n",
-					release->name, buf);
-		nread = getline(&buf, &buflen, fp);
-	}
-
-	if (!feof(fp)) {
-		opkg_perror(ERROR, "Problems reading Release file for %sd\n", release->name);
-		ret = -1;
-	}
-
-	return ret;
-}
-
+#include "release_parse.h"
 
 static void
 release_init(release_t *release)
@@ -151,7 +33,9 @@ release_init(release_t *release)
      release->name = NULL;
      release->datestring = NULL;
      release->architectures = NULL;
+     release->architectures_count = 0;
      release->components = NULL;
+     release->components_count = 0;
 }
 
 release_t *
@@ -168,10 +52,23 @@ release_new(void)
 void
 release_deinit(release_t *release)
 {
+    int i;
+
     free(release->name);
     free(release->datestring);
-    simple_list_deinit(release->architectures);
-    simple_list_deinit(release->components);
+
+    for(i = 0; i < release->architectures_count; i++){
+	free(release->architectures[i]);
+    }
+    release->architectures_count = 0;
+    free(release->architectures);
+
+    for(i = 0; i < release->components_count; i++){
+	free(release->components[i]);
+    }
+    release->components_count = 0;
+    free(release->components);
+
 }
 
 int
