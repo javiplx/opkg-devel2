@@ -188,7 +188,7 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	       sprintf_alloc(&tmp_file_name, "%s/%s-%s-%s%s", tmpdir, dist->name, comps[i], nv->name, ".gz");
 
-	       err = opkg_download(url, tmp_file_name, NULL, NULL);
+	       err = opkg_download(url, tmp_file_name, NULL, NULL, 1);
 	       if (!err) {
 		    FILE *in, *out;
 		    opkg_msg(NOTICE, "Inflating %s.\n", url);
@@ -210,7 +210,7 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	       if (err) {
 		    sprintf_alloc(&url, "%s-%s/Packages", prefix, nv->name);
-		    err = opkg_download(url, list_file_name, NULL, NULL);
+		    err = opkg_download(url, list_file_name, NULL, NULL, 1);
 		    free(url);
 	       }
 

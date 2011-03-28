@@ -122,7 +122,7 @@ opkg_update_cmd(int argc, char **argv)
 	  sprintf_alloc(&url, "%s/dists/%s/Release", src->value, src->name);
 
 	  sprintf_alloc(&list_file_name, "%s/%s", lists_dir, src->name);
-	  err = opkg_download(url, list_file_name, NULL, NULL);
+	  err = opkg_download(url, list_file_name, NULL, NULL, 0);
 	  if (!err) {
 	       opkg_msg(NOTICE, "Downloaded release files for dist %s.\n",
 			    src->name);
@@ -164,7 +164,7 @@ opkg_update_cmd(int argc, char **argv)
 	      FILE *in, *out;
 	      
 	      sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
-	      err = opkg_download(url, tmp_file_name, NULL, NULL);
+	      err = opkg_download(url, tmp_file_name, NULL, NULL, 0);
 	      if (err == 0) {
 		   opkg_msg(NOTICE, "Inflating %s.\n", url);
 		   in = fopen (tmp_file_name, "r");
@@ -181,7 +181,7 @@ opkg_update_cmd(int argc, char **argv)
 	      }
 	      free(tmp_file_name);
 	  } else
-	      err = opkg_download(url, list_file_name, NULL, NULL);
+	      err = opkg_download(url, list_file_name, NULL, NULL, 0);
 	  if (err) {
 	       failures++;
 	  } else {
@@ -205,7 +205,7 @@ opkg_update_cmd(int argc, char **argv)
               /* Put the signature in the right place */
               sprintf_alloc (&tmp_file_name, "%s/%s.sig", lists_dir, src->name);
 
-              err = opkg_download(url, tmp_file_name, NULL, NULL);
+              err = opkg_download(url, tmp_file_name, NULL, NULL, 0);
               if (err) {
                   failures++;
                   opkg_msg(NOTICE, "Signature check failed.\n");

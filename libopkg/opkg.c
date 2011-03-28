@@ -347,7 +347,7 @@ opkg_install_package(const char *package_name,
 
 		err = opkg_download(url, pkg->local_filename,
 				    (curl_progress_func) curl_progress_cb,
-				    &cb_data);
+				    &cb_data, 0);
 		free(url);
 
 		if (err) {
@@ -618,7 +618,7 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 
 			err = opkg_download(url, tmp_file_name,
 					  (curl_progress_func) curl_progress_cb,
-					  &cb_data);
+					  &cb_data, 0);
 
 			if (err == 0) {
 				opkg_msg(INFO, "Inflating %s...\n",
@@ -637,7 +637,7 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 			}
 			free(tmp_file_name);
 		} else
-			err = opkg_download(url, list_file_name, NULL, NULL);
+			err = opkg_download(url, list_file_name, NULL, NULL, 0);
 
 		if (err) {
 			opkg_msg(ERROR, "Couldn't retrieve %s\n", url);
@@ -664,7 +664,7 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 			/* make sure there is no existing signature file */
 			unlink(sig_file_name);
 
-			err = opkg_download(url, sig_file_name, NULL, NULL);
+			err = opkg_download(url, sig_file_name, NULL, NULL, 0);
 			if (err) {
 				opkg_msg(ERROR, "Couldn't retrieve %s\n", url);
 			} else {
@@ -867,7 +867,7 @@ opkg_repository_accessibility_check(void)
 		iter1 = str_list_pop(src);
 		repositories--;
 
-		if (opkg_download(iter1->data, "/dev/null", NULL, NULL))
+		if (opkg_download(iter1->data, "/dev/null", NULL, NULL, 0))
 			ret++;
 		str_list_elt_deinit(iter1);
 	}
