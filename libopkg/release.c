@@ -28,6 +28,7 @@
 #include "release_parse.h"
 
 #include "parse_util.h"
+#include "file_util.h"
 
 static void
 release_init(release_t *release)
@@ -189,6 +190,7 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 	  list_for_each_entry(l , &conf->arch_list.head, node) {
 	       char *url;
 	       char *tmp_file_name, *list_file_name;
+	       char *subpath = NULL;
 
 	       nv_pair_t *nv = (nv_pair_t *)l->data;
 
@@ -198,7 +200,16 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	       sprintf_alloc(&tmp_file_name, "%s/%s-%s-%s%s", tmpdir, dist->name, comps[i], nv->name, ".gz");
 
+	       sprintf_alloc(&subpath, "%s/binary-%s/%s", comps[i], nv->name, dist->gzip ? "Packages.gz" : "Packages");
+
 	       err = opkg_download(url, tmp_file_name, NULL, NULL, 1);
+	       if (!err) {
+		    err = release_verify_file(release, tmp_file_name, subpath);
+		    if (err) {
+			 unlink (tmp_file_name);
+			 unlink (list_file_name);
+		    }
+	       }
 	       if (!err) {
 		    FILE *in, *out;
 		    opkg_msg(NOTICE, "Inflating %s.\n", url);
@@ -221,6 +232,11 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 	       if (err) {
 		    sprintf_alloc(&url, "%s-%s/Packages", prefix, nv->name);
 		    err = opkg_download(url, list_file_name, NULL, NULL, 1);
+		    if (!err) {
+			 err = release_verify_file(release, tmp_file_name, subpath);
+			 if (err)
+			      unlink (list_file_name);
+		    }
 		    free(url);
 	       }
 
@@ -233,6 +249,87 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	  free(prefix);
      }
+
+     return ret;
+}
+
+int
+release_get_size(release_t *release, const char *pathname)
+{
+     const cksum_t *cksum;
+
+     if (release->md5sums) {
+	  cksum = cksum_list_find(release->md5sums, pathname);
+	  return cksum->size;
+     }
+
+#if defined HAVE_SHA256
+     if (release->sha256sums) {
+	  cksum = cksum_list_find(release->sha256sums, pathname);
+	  return cksum->size;
+     }
+#endif
+
+     return -1;
+}
+
+const char *
+release_get_md5(release_t *release, const char *pathname)
+{
+     const cksum_t *cksum;
+
+     if (release->md5sums) {
+	  cksum = cksum_list_find(release->md5sums, pathname);
+	  return cksum->value;
+     }
+
+     return '\0';
+}
+
+#if defined HAVE_SHA256
+const char *
+release_get_sha256(release_t *release, const char *pathname)
+{
+     const cksum_t *cksum;
+
+     if (release->sha256sums) {
+	  cksum = cksum_list_find(release->sha256sums, pathname);
+	  return cksum->value;
+     }
+
+     return '\0';
+}
+#endif
+
+int
+release_verify_file(release_t *release, const char* file_name, const char *pathname)
+{
+     struct stat f_info;
+     char *f_md5 = file_md5sum_alloc(file_name);
+     const char *md5 = release_get_md5(release, pathname);
+#ifndef SHA256_H
+     char *f_sha256 = file_sha256sum_alloc(file_name);
+     const char *sha256 = release_get_sha256(release, pathname);
+#endif
+     int ret = 0;
+
+     if (stat(file_name, &f_info) || (f_info.st_size!=release_get_size(release, pathname))) {
+	  opkg_msg(ERROR, "Size verification failed for %s - %s.\n", release->name, pathname);
+	  ret = 1;
+     } else if (md5 && strcmp(md5, f_md5)) {
+	  opkg_msg(ERROR, "Size verification failed for %s - %s.\n", release->name, pathname);
+	  ret = 1;
+#ifndef SHA256_H
+     } else if (sha256 && strcmp(sha256, f_sha256)) {
+	  opkg_msg(ERROR, "Size verification failed for %s - %s.\n", release->name, pathname);
+	  ret = 1;
+#endif
+     }
+
+     free(f_md5);
+#ifndef SHA256_H
+     free(f_sha256);
+#endif
 
      return ret;
 }

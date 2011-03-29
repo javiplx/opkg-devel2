@@ -28,6 +28,12 @@ static int
 release_parse_line(release_t *release, const char *line)
 {
 	int ret = 0;
+	unsigned int count = 0;
+	char **list = 0;
+	static int reading_md5sums = 0;
+#if defined HAVE_SHA256
+	static int reading_sha256sums = 0;
+#endif
 
 	switch (*line) {
 	case 'A':
@@ -51,12 +57,55 @@ release_parse_line(release_t *release, const char *line)
 		}
 		break;
 
+	case 'M':
+		if (is_field("MD5sum", line)) {
+			reading_md5sums = 1;
+			if (release->md5sums == NULL) {
+			     release->md5sums = xcalloc(1, sizeof(cksum_list_t));
+			     cksum_list_init(release->md5sums);
+			}
+			goto dont_reset_flags;
+	    	}
+		break;
+
+#if defined HAVE_SHA256
+	case 'S':
+		if (is_field("SHA256", line)) {
+			reading_sha256sums = 1;
+			if (release->sha256sums == NULL) {
+			     release->sha256sums = xcalloc(1, sizeof(cksum_list_t));
+			     cksum_list_init(release->sha256sums);
+			}
+			goto dont_reset_flags;
+	    	}
+		break;
+#endif
+
 	case ' ':
+		if (reading_md5sums) {
+			list = parse_list(line, &count, ' ', 1);
+			cksum_list_append(release->md5sums, list);
+			goto dont_reset_flags;
+		}
+#if defined HAVE_SHA256
+		else if (reading_sha256sums) {
+			list = parse_list(line, &count, ' ', 1);
+			cksum_list_append(release->sha256sums, list);
+			goto dont_reset_flags;
+		}
+#endif
 		break;
 
 	default:
 		ret = 1;
 	}
+
+	reading_md5sums = 0;
+#if defined HAVE_SHA256
+	reading_sha256sums = 0;
+#endif
+
+dont_reset_flags:
 
 	return ret;
 }

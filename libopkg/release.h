@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include "pkg.h"
+#include "cksum_list.h"
 
 struct release
 {
@@ -29,6 +30,10 @@ struct release
      unsigned int architectures_count;
      char **components;
      unsigned int components_count;
+     cksum_list_t *md5sums;
+#if defined HAVE_SHA256
+     cksum_list_t *sha256sums;
+#endif
      char **complist;
      unsigned int complist_count;
 };
@@ -44,5 +49,7 @@ int release_comps_supported(release_t *release, const char *complist);
 int release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmpdir);
 
 const char **release_comps(release_t *release, unsigned int *count);
+
+int release_verify_file(release_t *release, const char *filename, const char *pathname);
 
 #endif
