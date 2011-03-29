@@ -155,19 +155,29 @@ release_comps_supported(release_t *release, const char *complist)
      return ret;
 }
 
+const char **
+release_comps(release_t *release, unsigned int *count)
+{
+     char **comps = release->complist;
+
+     if (!comps) {
+	  comps = release->components;
+	  *count = release->components_count;
+     } else {
+	  *count = release->complist_count;
+     }
+
+     return (const char **)comps;
+}
+
 int
 release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmpdir)
 {
      int ret = 0;
-     unsigned int ncomp = release->complist_count;
-     char **comps = release->complist;
+     unsigned int ncomp;
+     const char **comps = release_comps(release, &ncomp);
      nv_pair_list_elt_t *l;
      int i;
-
-     if (!comps) {
-	  ncomp = release->components_count;
-	  comps = release->components;
-     }
 
      for(i = 0; i < ncomp; i++){
 	  int err = 0;
@@ -184,7 +194,7 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	       sprintf_alloc(&url, "%s-%s/%s", prefix, nv->name, dist->gzip ? "Packages.gz" : "Packages");
 
-	       sprintf_alloc(&list_file_name, "%s/%s-%s-%s", lists_dir, dist->name, nv->name, comps[i]);
+	       sprintf_alloc(&list_file_name, "%s/%s-%s-%s", lists_dir, dist->name, comps[i], nv->name);
 
 	       sprintf_alloc(&tmp_file_name, "%s/%s-%s-%s%s", tmpdir, dist->name, comps[i], nv->name, ".gz");
 

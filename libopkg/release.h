@@ -43,4 +43,6 @@ int release_arch_supported(release_t *release);
 int release_comps_supported(release_t *release, const char *complist);
 int release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmpdir);
 
+const char **release_comps(release_t *release, unsigned int *count);
+
 #endif
