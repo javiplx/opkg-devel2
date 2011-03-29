@@ -74,17 +74,19 @@ int
 dist_hash_add_from_file(const char *lists_dir, pkg_src_t *dist)
 {
 	nv_pair_list_elt_t *l;
-	char *list_file;
+	char *list_file, *subname;
 
 	list_for_each_entry(l , &conf->arch_list.head, node) {
 		nv_pair_t *nv = (nv_pair_t *)l->data;
-		sprintf_alloc(&list_file, "%s/%s-%s", lists_dir, dist->name, nv->name);
+		sprintf_alloc(&subname, "%s-%s", dist->name, nv->name);
+		sprintf_alloc(&list_file, "%s/%s", lists_dir, subname);
 
 		if (file_exists(list_file)) {
 			if (pkg_hash_add_from_file(list_file, dist, NULL, 0)) {
 				free(list_file);
 				return -1;
 			}
+			pkg_src_list_append (&conf->pkg_src_list, subname, dist->value, NULL, 0);
 		}
 
 		free(list_file);
@@ -181,7 +183,7 @@ pkg_hash_load_feeds(void)
 
 			unsigned int ncomp;
 			const char **comps = release_comps(release, &ncomp);
-			subdist = (pkg_src_t *) malloc(sizeof(pkg_src_t));
+			subdist = (pkg_src_t *) xmalloc(sizeof(pkg_src_t));
 			memcpy(subdist, src, sizeof(pkg_src_t));
 
 			for(i = 0; i < ncomp; i++){
