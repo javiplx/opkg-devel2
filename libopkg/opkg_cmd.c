@@ -152,6 +152,9 @@ opkg_update_cmd(int argc, char **argv)
 
 	  src = (pkg_src_t *)iter->data;
 
+	  if (src->extra_data && strcmp(src->extra_data, "__dummy__ "))
+	      continue;
+
 	  if (src->extra_data)	/* debian style? */
 	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data, 
 			    src->gzip ? "Packages.gz" : "Packages");

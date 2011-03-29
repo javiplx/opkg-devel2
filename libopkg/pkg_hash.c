@@ -86,7 +86,7 @@ dist_hash_add_from_file(const char *lists_dir, pkg_src_t *dist)
 				free(list_file);
 				return -1;
 			}
-			pkg_src_list_append (&conf->pkg_src_list, subname, dist->value, NULL, 0);
+			pkg_src_list_append (&conf->pkg_src_list, subname, dist->value, "__dummy__", 0);
 		}
 
 		free(list_file);
