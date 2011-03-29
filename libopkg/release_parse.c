@@ -82,6 +82,7 @@ release_parse_from_stream(release_t *release, FILE *fp)
 		ret = -1;
 	}
 
+	free(buf);
 	return ret;
 }
 
