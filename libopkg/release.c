@@ -194,14 +194,14 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 
 	       nv_pair_t *nv = (nv_pair_t *)l->data;
 
-	       sprintf_alloc(&url, "%s-%s/%s", prefix, nv->name, dist->gzip ? "Packages.gz" : "Packages");
-
 	       sprintf_alloc(&list_file_name, "%s/%s-%s-%s", lists_dir, dist->name, comps[i], nv->name);
 
 	       sprintf_alloc(&tmp_file_name, "%s/%s-%s-%s%s", tmpdir, dist->name, comps[i], nv->name, ".gz");
 
 	       sprintf_alloc(&subpath, "%s/binary-%s/%s", comps[i], nv->name, dist->gzip ? "Packages.gz" : "Packages");
 
+	       if (dist->gzip) {
+	       sprintf_alloc(&url, "%s-%s/Packages.gz", prefix, nv->name);
 	       err = opkg_download(url, tmp_file_name, NULL, NULL, 1);
 	       if (!err) {
 		    err = release_verify_file(release, tmp_file_name, subpath);
@@ -228,6 +228,7 @@ release_download(release_t *release, pkg_src_t *dist, char *lists_dir, char *tmp
 		    unlink (tmp_file_name);
 	       }
 	       free(url);
+	       }
 
 	       if (err) {
 		    sprintf_alloc(&url, "%s-%s/Packages", prefix, nv->name);
