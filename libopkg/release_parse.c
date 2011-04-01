@@ -1,4 +1,4 @@
-/* release.c - the opkg package management system
+/* release_parse.c - the opkg package management system
 
    Javier Palacios
 

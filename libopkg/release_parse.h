@@ -1,4 +1,4 @@
-/* release.h - the opkg package management system
+/* release_parse.h - the opkg package management system
 
    Javier Palacios
 

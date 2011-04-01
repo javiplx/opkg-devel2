@@ -209,7 +209,6 @@ opkg_conf_parse_file(const char *filename,
      if (err)
           goto err1;
 
-// FIXME : Do we actually need this extended regexp ???
      err = xregcomp(&valid_line_re,
 		     "^[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))"
 		     "[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))"
@@ -273,7 +272,6 @@ opkg_conf_parse_file(const char *filename,
 				regmatch[11].rm_eo - regmatch[11].rm_so);
 	  }
 
-// Jump over lines matching the new "extended" regexp format
 	  if (regmatch[13].rm_so!=regmatch[13].rm_eo && strncmp(type, "dist", 4)!=0) {
 	       opkg_msg(ERROR, "%s:%d: Ignoring config line with trailing garbage: `%s'\n",
 		       filename, line_num, line);

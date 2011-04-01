@@ -1,4 +1,4 @@
-/* pkg_parse.h - the opkg package management system
+/* parse_util.h - the opkg package management system
 
    Steven M. Ayer
    
